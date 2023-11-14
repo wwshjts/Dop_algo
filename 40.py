@@ -17,7 +17,6 @@ class Node:
 def merge(node1, node2):
     if not node1: return node2
     if not node2: return node1
-
     if node1.prioriety < node2.prioriety:
         node1.right = merge(node1.right, node2)
         update(node1)
@@ -26,6 +25,20 @@ def merge(node1, node2):
         node2.left = merge(node1, node2.left)
         update(node2)
         return node2
+
+def splitBySize(node, k):
+    if not node: return (None, None)
+    l = 0 if not node.left else node.left.rank
+    if k <= l:
+        ll, lr = splitBySize(node.left, k)
+        node.left = lr
+        update(node)
+        return ll, node
+    else:
+        rl, rr = splitBySize(node.right, k - l - 1)
+        node.right = rl
+        update(node)
+        return node, rr
 
 def make(a):
     n = len(a)
@@ -37,42 +50,7 @@ def make(a):
         root = merge(root, nodes[i])
         print(serialize(root))
     return root
-'''
-def makeTreap(a) -> Node:
-    n = len(a)
-    priorities = [i for i in range(n)]
-    shuffle(priorities)
-    nodes = [Node(priorities[i], a[i], 1, a[i]) for i in range(n)]
-    root = nodes[0]
-    for i in range(1, n):
-        prev = nodes[i-1]
-        curr = nodes[i]
-        if prev.prioriety < curr.prioriety:
-            prev.right = curr
-            curr.par = prev
-            prev.sum += curr.sum
-            prev.rank += curr.rank
-            prev = prev.par
-            while prev:
-                prev.sum += curr.sum
-                prev.rank += curr.rank
-                prev = prev.par
-        else:
-            while(prev.par and prev.par.prioriety > curr.prioriety):
-                prev = prev.par
-            if prev.par == None:
-                root = curr
-                prev.par = curr
-            else:
-                prev.par.right = curr
-                prev.par, curr.par = curr, prev.par
-                curr.par.sum += curr.sum
-                curr.par.rank += 1
-            curr.rank += prev.rank
-            curr.sum += prev.sum
-            curr.left = prev
-    return root
-'''
+
 def printTreapAsArr(root):
     if not root : return
     printTreapAsArr(root.left)
@@ -104,4 +82,6 @@ def serialize(root):
 l = [1,2,3,4,5]
 root = make(l)
 print(serialize(root))
-printTreapAsArr(root)
+n1, n2 = splitBySize(root, 2)
+print(serialize(n1))
+print(serialize(n2))
