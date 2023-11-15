@@ -1,6 +1,15 @@
 from typing import List
-from random import shuffle
-
+from random import randint
+class p_Gen:
+    def __init__(self):
+        self.cnt = 0
+        self.prt = set()
+    def gen(self):
+        p = randint(0, 2**20)
+        while (p in self.prt):
+            p = randint(0, 2**20) 
+        self.prt.add(p)
+        return p
 class Node:
     def __init__(self, prioriety, val, rank, s, par=None):
         self.prioriety = prioriety
@@ -13,7 +22,7 @@ class Node:
 
     def __str__(self):
         return f'p: {self.prioriety}, v: {self.val}, rank: {self.rank}, s: {self.sum} '
-
+    
 def merge(node1, node2):
     if not node1: return node2
     if not node2: return node1
@@ -40,22 +49,41 @@ def splitBySize(node, k):
         update(node)
         return node, rr
 
-def make(a):
+def insert(treap, val, pos, gen):
+    r, l = splitBySize(treap, pos - 1)
+    node = Node(gen.gen(), val, 1, val)
+    r = merge(r, node)
+    r = merge(r, l)
+    return r
+
+def erase(root, pos):
+    l,r = splitBySize(root, pos -1 )
+    rl, rr = splitBySize(r, 1)
+    root = merge(l, rr)
+    return root
+
+def sum(root, frm, to):
+    l,r = splitBySize(root, frm -1 )
+    rl, rr = splitBySize(r, to - frm + 1)
+    return rl.sum
+
+def make(a, g):
     n = len(a)
-    priorities = [i for i in range(n)]
-    shuffle(priorities)
-    nodes = [Node(priorities[i], a[i], 1, a[i]) for i in range(n)]
+    nodes = [Node(g.gen(), a[i], 1, a[i]) for i in range(n)]
     root = nodes[0]
     for i in range(1, n):
         root = merge(root, nodes[i])
         print(serialize(root))
     return root
 
-def printTreapAsArr(root):
-    if not root : return
-    printTreapAsArr(root.left)
-    print(root.val, end = ' ')
-    printTreapAsArr(root.right)
+def printTreap(root):
+    def printTreapAsArr(root):
+        if not root : return
+        printTreapAsArr(root.left)
+        print(root.val, end = ' ')
+        printTreapAsArr(root.right)
+    printTreapAsArr(root)
+    print()
 
 def update(root):
     rank_left = 0 if not root.left else root.left.rank
@@ -78,10 +106,3 @@ def serialize(root):
     arr = []
     dfs(root, arr)
     return(' '.join(arr))
-
-l = [1,2,3,4,5]
-root = make(l)
-print(serialize(root))
-n1, n2 = splitBySize(root, 2)
-print(serialize(n1))
-print(serialize(n2))
